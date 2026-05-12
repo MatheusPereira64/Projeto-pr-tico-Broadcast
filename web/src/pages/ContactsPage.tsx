@@ -36,7 +36,7 @@ const getInitials = (name: string) =>
   name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
 
 const avatarColors = [
-  '#4F46E5', '#7C3AED', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444', '#EC4899',
+  '#3B82F6', '#8B5CF6', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444', '#EC4899',
 ];
 const getAvatarColor = (id: string) => avatarColors[id.charCodeAt(0) % avatarColors.length];
 
@@ -97,8 +97,8 @@ export const ContactsPage = () => {
             {contacts.length > 0 ? `${contacts.length} contato${contacts.length !== 1 ? 's' : ''}` : 'Gerencie os contatos desta conexão'}
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5 }}>
-          Novo contato
+        <Button variant="contained" color="success" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5, flexShrink: 0, px: { xs: 1.5, sm: 2.5 } }}>
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Novo contato</Box>
         </Button>
       </Box>
 
@@ -123,14 +123,14 @@ export const ContactsPage = () => {
         </Box>
       ) : contacts.length === 0 ? (
         <Card elevation={0} sx={{ border: '2px dashed', borderColor: 'grey.200', borderRadius: 4, textAlign: 'center', py: 10, px: 4, bgcolor: 'transparent' }}>
-          <Box sx={{ width: 72, height: 72, borderRadius: 4, background: 'linear-gradient(135deg, rgba(79,70,229,0.1), rgba(124,58,237,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+          <Box sx={{ width: 72, height: 72, borderRadius: 4, background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <PeopleAltIcon sx={{ fontSize: 36, color: 'primary.main' }} />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 700 }} gutterBottom>Nenhum contato ainda</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 280, mx: 'auto' }}>
             Adicione contatos para começar a enviar mensagens
           </Typography>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5 }}>
+          <Button variant="contained" color="success" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5 }}>
             Adicionar contato
           </Button>
         </Card>
@@ -152,13 +152,13 @@ export const ContactsPage = () => {
                   </Box>
                   <Box sx={{ display: 'flex', flexShrink: 0 }}>
                     <Tooltip title="Editar">
-                      <IconButton size="small" onClick={() => openEdit(contact)}>
+                      <IconButton size="small" onClick={() => openEdit(contact)} sx={{ color: '#0EA5E9', '&:hover': { bgcolor: 'rgba(14,165,233,0.1)' } }}>
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Excluir">
-                      <IconButton size="small" onClick={() => openDelete(contact)}>
-                        <DeleteIcon fontSize="small" color="error" />
+                      <IconButton size="small" onClick={() => openDelete(contact)} sx={{ color: '#EF4444', '&:hover': { bgcolor: 'rgba(239,68,68,0.1)' } }}>
+                        <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   </Box>
@@ -178,8 +178,8 @@ export const ContactsPage = () => {
           <TextField label="Telefone" value={phone} onChange={(e) => setPhone(e.target.value)} fullWidth placeholder="+55 11 99999-9999" />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-          <Button onClick={() => setDialogOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>Cancelar</Button>
-          <Button variant="contained" onClick={handleSave} disabled={saving} sx={{ borderRadius: 2 }}>
+          <Button onClick={() => setDialogOpen(false)} variant="outlined" color="inherit" sx={{ borderRadius: 2 }}>Cancelar</Button>
+          <Button variant="contained" color="info" onClick={handleSave} disabled={saving} sx={{ borderRadius: 2 }}>
             {saving ? 'Salvando...' : 'Salvar'}
           </Button>
         </DialogActions>
@@ -194,7 +194,7 @@ export const ContactsPage = () => {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>Cancelar</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)} variant="outlined" color="inherit" sx={{ borderRadius: 2 }}>Cancelar</Button>
           <Button variant="contained" color="error" onClick={handleDelete} sx={{ borderRadius: 2 }}>Excluir</Button>
         </DialogActions>
       </Dialog>

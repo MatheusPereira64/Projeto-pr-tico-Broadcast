@@ -88,11 +88,12 @@ export const ConnectionsPage = () => {
         </Box>
         <Button
           variant="contained"
+          color="success"
           startIcon={<AddIcon />}
           onClick={openCreate}
-          sx={{ borderRadius: 2.5, px: 2.5 }}
+          sx={{ borderRadius: 2.5, px: { xs: 1.5, sm: 2.5 }, flexShrink: 0 }}
         >
-          Nova conexão
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Nova conexão</Box>
         </Button>
       </Box>
 
@@ -118,7 +119,7 @@ export const ConnectionsPage = () => {
               width: 72,
               height: 72,
               borderRadius: 4,
-              background: 'linear-gradient(135deg, rgba(79,70,229,0.1), rgba(124,58,237,0.1))',
+              background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -132,7 +133,7 @@ export const ConnectionsPage = () => {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 300, mx: 'auto' }}>
             Crie sua primeira conexão para começar a gerenciar contatos e mensagens
           </Typography>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5 }}>
+          <Button variant="contained" color="success" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5 }}>
             Criar primeira conexão
           </Button>
         </Card>
@@ -144,7 +145,7 @@ export const ConnectionsPage = () => {
               elevation={0}
               sx={{
                 cursor: 'pointer',
-                '&:hover': { boxShadow: '0 8px 24px rgba(79,70,229,0.12)', transform: 'translateY(-2px)', borderColor: 'primary.light' },
+                '&:hover': { boxShadow: '0 8px 24px rgba(59,130,246,0.15)', transform: 'translateY(-2px)', borderColor: 'primary.light' },
               }}
               onClick={() => navigate(`/connections/${conn.id}/contacts`)}
             >
@@ -155,7 +156,7 @@ export const ConnectionsPage = () => {
                       width: 48,
                       height: 48,
                       borderRadius: 3,
-                      background: 'linear-gradient(135deg, rgba(79,70,229,0.12), rgba(124,58,237,0.12))',
+                      background: 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.12))',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -165,12 +166,12 @@ export const ConnectionsPage = () => {
                   </Box>
                   <Box sx={{ display: 'flex', gap: 0.5 }} onClick={(e) => e.stopPropagation()}>
                     <Tooltip title="Editar">
-                      <IconButton size="small" onClick={(e) => openEdit(conn, e)} sx={{ '&:hover': { bgcolor: 'primary.50', color: 'primary.main' } }}>
+                      <IconButton size="small" onClick={(e) => openEdit(conn, e)} sx={{ color: '#0EA5E9', '&:hover': { bgcolor: 'rgba(14,165,233,0.1)', color: '#0284C7' } }}>
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Excluir">
-                      <IconButton size="small" onClick={(e) => openDelete(conn, e)} sx={{ '&:hover': { bgcolor: 'error.50', color: 'error.main' } }}>
+                      <IconButton size="small" onClick={(e) => openDelete(conn, e)} sx={{ color: '#EF4444', '&:hover': { bgcolor: 'rgba(239,68,68,0.1)', color: '#DC2626' } }}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -219,8 +220,8 @@ export const ConnectionsPage = () => {
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-          <Button onClick={() => setDialogOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>Cancelar</Button>
-          <Button variant="contained" onClick={handleSave} disabled={saving} sx={{ borderRadius: 2 }}>
+          <Button onClick={() => setDialogOpen(false)} variant="outlined" color="inherit" sx={{ borderRadius: 2 }}>Cancelar</Button>
+          <Button variant="contained" color="info" onClick={handleSave} disabled={saving} sx={{ borderRadius: 2 }}>
             {saving ? 'Salvando...' : 'Salvar'}
           </Button>
         </DialogActions>
@@ -235,7 +236,7 @@ export const ConnectionsPage = () => {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>Cancelar</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)} variant="outlined" color="inherit" sx={{ borderRadius: 2 }}>Cancelar</Button>
           <Button variant="contained" color="error" onClick={handleDelete} sx={{ borderRadius: 2 }}>Excluir</Button>
         </DialogActions>
       </Dialog>

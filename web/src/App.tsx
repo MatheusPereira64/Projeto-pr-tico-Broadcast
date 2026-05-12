@@ -11,12 +11,13 @@ import { MessagesPage } from './pages/MessagesPage';
 
 const theme = createTheme({
   palette: {
-    primary: { main: '#4F46E5', light: '#818CF8', dark: '#3730A3' },
-    secondary: { main: '#7C3AED', light: '#A78BFA', dark: '#5B21B6' },
+    primary: { main: '#3B82F6', light: '#60A5FA', dark: '#2563EB' },
+    secondary: { main: '#8B5CF6', light: '#A78BFA', dark: '#7C3AED' },
     success: { main: '#10B981' },
     warning: { main: '#F59E0B' },
     error: { main: '#EF4444' },
-    background: { default: '#F8FAFC', paper: '#FFFFFF' },
+    info: { main: '#0EA5E9' },
+    background: { default: '#F5F7FF', paper: '#FFFFFF' },
     grey: {
       50: '#F8FAFC',
       100: '#F1F5F9',
@@ -68,11 +69,21 @@ const theme = createTheme({
           padding: '8px 20px',
           boxShadow: 'none',
           '&:hover': { boxShadow: 'none' },
-        },
-        contained: {
-          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #4338CA 0%, #6D28D9 100%)',
+          '&.MuiButton-containedPrimary': {
+            background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)',
+            '&:hover': { background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)' },
+          },
+          '&.MuiButton-containedSuccess': {
+            background: 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
+            '&:hover': { background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' },
+          },
+          '&.MuiButton-containedInfo': {
+            background: 'linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%)',
+            '&:hover': { background: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)' },
+          },
+          '&.MuiButton-containedError': {
+            background: 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)',
+            '&:hover': { background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)' },
           },
         },
       },

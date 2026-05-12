@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import {
   AppBar,
   Box,
+  Button,
   CssBaseline,
   Drawer,
   IconButton,
@@ -23,7 +24,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import WifiIcon from '@mui/icons-material/Wifi';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import SendIcon from '@mui/icons-material/Send';
 import { useAuth } from '../../contexts/AuthContext';
 
 const DRAWER_WIDTH = 256;
@@ -59,22 +59,15 @@ export const AppShell = () => {
           display: 'flex',
           alignItems: 'center',
           gap: 1.5,
-          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+          background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
         }}
       >
         <Box
-          sx={{
-            width: 36,
-            height: 36,
-            borderRadius: 2,
-            bgcolor: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <SendIcon sx={{ color: 'white', fontSize: 20 }} />
-        </Box>
+          component="img"
+          src="/logo.png"
+          alt="SendFlow"
+          sx={{ width: 36, height: 36, borderRadius: '28%' }}
+        />
         <Typography variant="h6" sx={{ color: 'white', fontWeight: 800, letterSpacing: '-0.5px' }}>
           SendFlow
         </Typography>
@@ -100,12 +93,12 @@ export const AppShell = () => {
                     py: 1.1,
                     px: 1.5,
                     '&.Mui-selected': {
-                      background: 'linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(124,58,237,0.12) 100%)',
+                      background: 'linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(139,92,246,0.12) 100%)',
                       color: 'primary.main',
                       '& .MuiListItemIcon-root': { color: 'primary.main' },
                     },
                     '&.Mui-selected:hover': {
-                      background: 'linear-gradient(135deg, rgba(79,70,229,0.18) 0%, rgba(124,58,237,0.18) 100%)',
+                      background: 'linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(139,92,246,0.18) 100%)',
                     },
                   }}
                 >
@@ -123,21 +116,29 @@ export const AppShell = () => {
         </List>
       </Box>
 
-      {/* User info */}
+      {/* User info + Sair */}
       <Divider />
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Avatar sx={{ width: 36, height: 36, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', fontSize: 14, fontWeight: 700 }}>
-          {user?.email?.[0]?.toUpperCase()}
-        </Avatar>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{user?.email?.split('@')[0]}</Typography>
-          <Typography variant="caption" color="text.secondary" noWrap>{user?.email}</Typography>
+      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Avatar sx={{ width: 36, height: 36, background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)', fontSize: 14, fontWeight: 700 }}>
+            {user?.email?.[0]?.toUpperCase()}
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{user?.email?.split('@')[0]}</Typography>
+            <Typography variant="caption" color="text.secondary" noWrap>{user?.email}</Typography>
+          </Box>
         </Box>
-        <Tooltip title="Sair">
-          <IconButton size="small" onClick={handleLogout} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main', bgcolor: 'rgba(239,68,68,0.08)' } }}>
-            <ExitToAppIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        <Button
+          variant="outlined"
+          color="error"
+          size="small"
+          startIcon={<ExitToAppIcon fontSize="small" />}
+          onClick={handleLogout}
+          fullWidth
+          sx={{ borderRadius: 2, fontSize: '0.8rem', justifyContent: 'flex-start', px: 1.5 }}
+        >
+          Sair
+        </Button>
       </Box>
     </Box>
   );
@@ -163,16 +164,14 @@ export const AppShell = () => {
             <MenuIcon />
           </IconButton>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-            <Box sx={{ width: 28, height: 28, borderRadius: 1.5, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <SendIcon sx={{ color: 'white', fontSize: 16 }} />
-            </Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <Box component="img" src="/logo.png" alt="SendFlow" sx={{ width: 28, height: 28, borderRadius: '28%' }} />
+            <Typography variant="h6" sx={{ fontWeight: 800, background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               SendFlow
             </Typography>
           </Box>
           <Tooltip title={user?.email ?? ''}>
             <IconButton onClick={handleMenuOpen} size="small">
-              <Avatar sx={{ width: 32, height: 32, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', fontSize: 13, fontWeight: 700 }}>
+              <Avatar sx={{ width: 32, height: 32, background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)', fontSize: 13, fontWeight: 700 }}>
                 {user?.email?.[0]?.toUpperCase()}
               </Avatar>
             </IconButton>

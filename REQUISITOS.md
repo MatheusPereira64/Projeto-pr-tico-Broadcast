@@ -73,8 +73,11 @@
 ```
 Projeto-pr-tico-Broadcast/
 ├── functions/                  # Cloud Functions (Node 20 + TypeScript)
-│   └── src/
-│       └── index.ts            # dispatchScheduledMessages (cron a cada 1 min)
+│   ├── src/
+│   │   └── index.ts            # dispatchScheduledMessages (cron a cada 1 min)
+│   ├── lib/                    # Compilado pelo tsc
+│   ├── package.json
+│   └── tsconfig.json
 ├── web/                        # Frontend (React + Vite + TypeScript)
 │   └── src/
 │       ├── components/
@@ -105,7 +108,8 @@ Projeto-pr-tico-Broadcast/
 ├── firestore.rules                     # Regras de segurança Firestore
 ├── firestore.indexes.json
 ├── firebase.json                       # Hosting → web/dist
-└── .firebaserc                         # projeto: projeto-sendflow-broadcast
+├── .firebaserc                         # projeto: projeto-sendflow-broadcast
+└── REQUISITOS.md                       # Este arquivo
 ```
 
 ---

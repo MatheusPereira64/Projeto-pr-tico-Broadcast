@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import SendIcon from '@mui/icons-material/Send';
 import { useAuth } from '../contexts/AuthContext';
 
 export const LoginPage = () => {
@@ -49,7 +48,7 @@ export const LoginPage = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+          background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
           p: 6,
           color: 'white',
           position: 'relative',
@@ -80,21 +79,11 @@ export const LoginPage = () => {
         />
         <Box sx={{ position: 'relative', textAlign: 'center' }}>
           <Box
-            sx={{
-              width: 72,
-              height: 72,
-              borderRadius: 4,
-              bgcolor: 'rgba(255,255,255,0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
-              mb: 3,
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <SendIcon sx={{ fontSize: 36, color: 'white' }} />
-          </Box>
+            component="img"
+            src="/logo.png"
+            alt="SendFlow"
+            sx={{ width: 140, height: 'auto', mx: 'auto', mb: 3, display: 'block', borderRadius: '28%', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}
+          />
           <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
             SendFlow
           </Typography>
@@ -129,20 +118,7 @@ export const LoginPage = () => {
         >
           {/* Logo mobile */}
           <Box sx={{ display: { md: 'none' }, textAlign: 'center', mb: 3 }}>
-            <Box
-              sx={{
-                width: 52,
-                height: 52,
-                borderRadius: 3,
-                background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 1.5,
-              }}
-            >
-              <SendIcon sx={{ color: 'white', fontSize: 26 }} />
-            </Box>
+            <Box component="img" src="/logo.png" alt="SendFlow" sx={{ width: 80, height: 'auto', mb: 1.5, borderRadius: '28%', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }} />
             <Typography variant="h6" sx={{ fontWeight: 700 }} color="primary">
               SendFlow
             </Typography>

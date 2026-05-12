@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import SendIcon from '@mui/icons-material/Send';
 import { useAuth } from '../contexts/AuthContext';
 
 export const RegisterPage = () => {
@@ -52,7 +51,7 @@ export const RegisterPage = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+          background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
           p: 6,
           color: 'white',
           position: 'relative',
@@ -62,9 +61,7 @@ export const RegisterPage = () => {
         <Box sx={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', top: -100, right: -100 }} />
         <Box sx={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', bottom: -80, left: -80 }} />
         <Box sx={{ position: 'relative', textAlign: 'center' }}>
-          <Box sx={{ width: 72, height: 72, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, backdropFilter: 'blur(10px)' }}>
-            <SendIcon sx={{ fontSize: 36, color: 'white' }} />
-          </Box>
+          <Box component="img" src="/logo.png" alt="SendFlow" sx={{ width: 140, height: 'auto', mx: 'auto', mb: 3, display: 'block', borderRadius: '28%', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }} />
           <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>SendFlow</Typography>
           <Typography variant="body1" sx={{ opacity: 0.8, maxWidth: 300 }}>
             Crie sua conta gratuitamente e comece a gerenciar suas conexões agora mesmo.
@@ -86,9 +83,7 @@ export const RegisterPage = () => {
       >
         <Paper elevation={0} sx={{ width: '100%', maxWidth: 400, p: { xs: 3, sm: 4 }, borderRadius: 4, border: '1px solid', borderColor: 'grey.200' }}>
           <Box sx={{ display: { md: 'none' }, textAlign: 'center', mb: 3 }}>
-            <Box sx={{ width: 52, height: 52, borderRadius: 3, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', mb: 1.5 }}>
-              <SendIcon sx={{ color: 'white', fontSize: 26 }} />
-            </Box>
+            <Box component="img" src="/logo.png" alt="SendFlow" sx={{ width: 80, height: 'auto', mb: 1.5, borderRadius: '28%', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }} />
             <Typography variant="h6" sx={{ fontWeight: 700 }} color="primary">SendFlow</Typography>
           </Box>
 
