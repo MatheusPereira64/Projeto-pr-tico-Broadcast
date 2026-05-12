@@ -5,11 +5,11 @@ import {
   Button,
   Card,
   CardContent,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Fade,
   IconButton,
   TextField,
   Tooltip,
@@ -22,13 +22,16 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WifiIcon from '@mui/icons-material/Wifi';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { CardSkeleton } from '../components/ui/CardSkeleton';
 import { useAuth } from '../contexts/AuthContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import { useConnections } from '../hooks/useConnections';
 import { createConnection, updateConnection, deleteConnection } from '../services/connections';
 import type { Connection } from '../types';
 
 export const ConnectionsPage = () => {
   const { user } = useAuth();
+  const { success, error: notifyError } = useSnackbar();
   const { connections, loading } = useConnections(user?.uid);
   const navigate = useNavigate();
 
@@ -56,10 +59,16 @@ export const ConnectionsPage = () => {
     if (!name.trim()) { setError('O nome é obrigatório.'); return; }
     setSaving(true);
     try {
-      if (editing) await updateConnection(editing.id, name.trim());
-      else await createConnection(user!.uid, name.trim());
+      if (editing) {
+        await updateConnection(editing.id, name.trim());
+        success('Conexão atualizada com sucesso!');
+      } else {
+        await createConnection(user!.uid, name.trim());
+        success('Conexão criada com sucesso!');
+      }
       setDialogOpen(false);
     } catch {
+      notifyError('Erro ao salvar. Tente novamente.');
       setError('Erro ao salvar. Tente novamente.');
     } finally {
       setSaving(false);
@@ -68,8 +77,15 @@ export const ConnectionsPage = () => {
 
   const handleDelete = async () => {
     if (!target) return;
-    try { await deleteConnection(target.id); }
-    finally { setDeleteDialogOpen(false); setTarget(null); }
+    try {
+      await deleteConnection(target.id);
+      success('Conexão excluída.');
+    } catch {
+      notifyError('Erro ao excluir. Tente novamente.');
+    } finally {
+      setDeleteDialogOpen(false);
+      setTarget(null);
+    }
   };
 
   return (
@@ -98,9 +114,7 @@ export const ConnectionsPage = () => {
       </Box>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-          <CircularProgress sx={{ color: 'primary.main' }} />
-        </Box>
+        <CardSkeleton count={6} variant="connection" />
       ) : connections.length === 0 ? (
         <Card
           elevation={0}
@@ -139,9 +153,9 @@ export const ConnectionsPage = () => {
         </Card>
       ) : (
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2.5 }}>
-          {connections.map((conn) => (
+          {connections.map((conn, i) => (
+            <Fade key={conn.id} in timeout={300 + i * 80}>
             <Card
-              key={conn.id}
               elevation={0}
               sx={{
                 cursor: 'pointer',
@@ -195,6 +209,7 @@ export const ConnectionsPage = () => {
                 </Box>
               </CardContent>
             </Card>
+            </Fade>
           ))}
         </Box>
       )}

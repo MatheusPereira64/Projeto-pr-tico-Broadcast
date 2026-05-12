@@ -8,7 +8,6 @@ import {
   CardContent,
   Checkbox,
   Chip,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -29,10 +28,12 @@ import {
   Tooltip,
   Typography,
   Avatar,
+  Fade,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { CardSkeleton } from '../components/ui/CardSkeleton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MessageIcon from '@mui/icons-material/Message';
@@ -45,6 +46,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from '../contexts/AuthContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import { useMessages } from '../hooks/useMessages';
 import { useContacts } from '../hooks/useContacts';
 import { createMessage, updateMessage, deleteMessage } from '../services/messages';
@@ -61,6 +63,7 @@ export const MessagesPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { success, error: notifyError } = useSnackbar();
 
   const [filter, setFilter] = useState<FilterType>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -100,10 +103,16 @@ export const MessagesPage = () => {
     const ts = new Date(scheduledAt).getTime();
     setSaving(true);
     try {
-      if (editing) await updateMessage(editing.id, selectedContacts, content.trim(), ts);
-      else await createMessage(user!.uid, connectionId!, selectedContacts, content.trim(), ts);
+      if (editing) {
+        await updateMessage(editing.id, selectedContacts, content.trim(), ts);
+        success('Mensagem atualizada com sucesso!');
+      } else {
+        await createMessage(user!.uid, connectionId!, selectedContacts, content.trim(), ts);
+        success('Mensagem agendada com sucesso!');
+      }
       setDialogOpen(false);
     } catch {
+      notifyError('Erro ao salvar. Tente novamente.');
       setFormError('Erro ao salvar. Tente novamente.');
     } finally {
       setSaving(false);
@@ -112,8 +121,15 @@ export const MessagesPage = () => {
 
   const handleDelete = async () => {
     if (!target) return;
-    try { await deleteMessage(target.id); }
-    finally { setDeleteDialogOpen(false); setTarget(null); }
+    try {
+      await deleteMessage(target.id);
+      success('Mensagem excluída.');
+    } catch {
+      notifyError('Erro ao excluir. Tente novamente.');
+    } finally {
+      setDeleteDialogOpen(false);
+      setTarget(null);
+    }
   };
 
   return (
@@ -181,7 +197,7 @@ export const MessagesPage = () => {
       </Box>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}><CircularProgress /></Box>
+        <CardSkeleton count={3} variant="message" />
       ) : filtered.length === 0 ? (
         <Card elevation={0} sx={{ border: '2px dashed', borderColor: 'grey.200', borderRadius: 4, textAlign: 'center', py: 10, px: 4, bgcolor: 'transparent' }}>
           <Box sx={{ width: 72, height: 72, borderRadius: 4, background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
@@ -199,8 +215,9 @@ export const MessagesPage = () => {
         </Card>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {filtered.map((msg) => (
-            <Card key={msg.id} elevation={0} sx={{ '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)' } }}>
+          {filtered.map((msg, i) => (
+            <Fade key={msg.id} in timeout={300 + i * 80}>
+            <Card elevation={0} sx={{ '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)' } }}>
               <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -244,6 +261,7 @@ export const MessagesPage = () => {
                 </Box>
               </CardContent>
             </Card>
+            </Fade>
           ))}
         </Box>
       )}

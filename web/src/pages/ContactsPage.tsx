@@ -6,11 +6,11 @@ import {
   Button,
   Card,
   CardContent,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Fade,
   IconButton,
   Tab,
   Tabs,
@@ -20,6 +20,7 @@ import {
   Avatar,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { CardSkeleton } from '../components/ui/CardSkeleton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -28,6 +29,7 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PersonIcon from '@mui/icons-material/Person';
 import { useAuth } from '../contexts/AuthContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import { useContacts } from '../hooks/useContacts';
 import { createContact, updateContact, deleteContact } from '../services/contacts';
 import type { Contact } from '../types';
@@ -43,6 +45,7 @@ const getAvatarColor = (id: string) => avatarColors[id.charCodeAt(0) % avatarCol
 export const ContactsPage = () => {
   const { connectionId } = useParams<{ connectionId: string }>();
   const { user } = useAuth();
+  const { success, error: notifyError } = useSnackbar();
   const { contacts, loading } = useContacts(user?.uid, connectionId);
   const navigate = useNavigate();
 
@@ -64,10 +67,16 @@ export const ContactsPage = () => {
     if (!phone.trim()) { setError('O telefone é obrigatório.'); return; }
     setSaving(true);
     try {
-      if (editing) await updateContact(editing.id, name.trim(), phone.trim());
-      else await createContact(user!.uid, connectionId!, name.trim(), phone.trim());
+      if (editing) {
+        await updateContact(editing.id, name.trim(), phone.trim());
+        success('Contato atualizado com sucesso!');
+      } else {
+        await createContact(user!.uid, connectionId!, name.trim(), phone.trim());
+        success('Contato adicionado com sucesso!');
+      }
       setDialogOpen(false);
     } catch {
+      notifyError('Erro ao salvar. Tente novamente.');
       setError('Erro ao salvar. Tente novamente.');
     } finally {
       setSaving(false);
@@ -76,8 +85,15 @@ export const ContactsPage = () => {
 
   const handleDelete = async () => {
     if (!target) return;
-    try { await deleteContact(target.id); }
-    finally { setDeleteDialogOpen(false); setTarget(null); }
+    try {
+      await deleteContact(target.id);
+      success('Contato excluído.');
+    } catch {
+      notifyError('Erro ao excluir. Tente novamente.');
+    } finally {
+      setDeleteDialogOpen(false);
+      setTarget(null);
+    }
   };
 
   return (
@@ -118,9 +134,7 @@ export const ContactsPage = () => {
       </Tabs>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-          <CircularProgress />
-        </Box>
+        <CardSkeleton count={4} variant="contact" />
       ) : contacts.length === 0 ? (
         <Card elevation={0} sx={{ border: '2px dashed', borderColor: 'grey.200', borderRadius: 4, textAlign: 'center', py: 10, px: 4, bgcolor: 'transparent' }}>
           <Box sx={{ width: 72, height: 72, borderRadius: 4, background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
@@ -136,8 +150,9 @@ export const ContactsPage = () => {
         </Card>
       ) : (
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2 }}>
-          {contacts.map((contact) => (
-            <Card key={contact.id} elevation={0} sx={{ '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)', transform: 'translateY(-1px)' } }}>
+          {contacts.map((contact, i) => (
+            <Fade key={contact.id} in timeout={300 + i * 70}>
+            <Card elevation={0} sx={{ '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)', transform: 'translateY(-1px)' } }}>
               <CardContent sx={{ p: 2.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar sx={{ width: 46, height: 46, bgcolor: getAvatarColor(contact.id), fontSize: 16, fontWeight: 700, flexShrink: 0 }}>
@@ -165,6 +180,7 @@ export const ContactsPage = () => {
                 </Box>
               </CardContent>
             </Card>
+            </Fade>
           ))}
         </Box>
       )}

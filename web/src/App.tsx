@@ -1,6 +1,7 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
+import { SnackbarProvider } from './contexts/SnackbarContext';
 import { PrivateRoute } from './components/layout/PrivateRoute';
 import { AppShell } from './components/layout/AppShell';
 import { LoginPage } from './pages/LoginPage';
@@ -8,6 +9,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ConnectionsPage } from './pages/ConnectionsPage';
 import { ContactsPage } from './pages/ContactsPage';
 import { MessagesPage } from './pages/MessagesPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 const theme = createTheme({
   palette: {
@@ -129,6 +131,7 @@ const theme = createTheme({
 const App = () => (
   <ThemeProvider theme={theme}>
     <CssBaseline />
+    <SnackbarProvider>
     <BrowserRouter>
       <AuthProvider>
         <Routes>
@@ -143,10 +146,11 @@ const App = () => (
             </Route>
           </Route>
 
-          <Route path="*" element={<Navigate to="/connections" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
+    </SnackbarProvider>
   </ThemeProvider>
 );
 

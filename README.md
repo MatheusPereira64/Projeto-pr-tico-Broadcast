@@ -1,103 +1,171 @@
-# Broadcast - Projeto Prático
+# SendFlow — Broadcast Message Manager
 
-Sistema SaaS de disparo de mensagens em broadcast. Cada cliente possui sua área isolada com conexões, contatos e mensagens.
+<p align="center">
+  <img src="web/public/logo.png" width="100" alt="SendFlow Logo" />
+</p>
 
-## Estrutura do Projeto
+<p align="center">
+  Plataforma SaaS para gerenciamento de conexões, contatos e agendamento de mensagens em broadcast.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript" />
+  <img src="https://img.shields.io/badge/Firebase-12-FFCA28?logo=firebase" />
+  <img src="https://img.shields.io/badge/Vite-5-646CFF?logo=vite" />
+  <img src="https://img.shields.io/badge/MUI-6-007FFF?logo=mui" />
+</p>
+
+---
+
+## Sobre o projeto
+
+O **SendFlow** permite que usuários autenticados criem **conexões** (canais de broadcast), gerenciem **contatos** por conexão e **agendem mensagens** para envio automático via Firebase Functions.
+
+A arquitetura segue princípios **SaaS multi-tenant**: cada usuário enxerga apenas seus próprios dados, garantidos por Firestore Security Rules.
+
+---
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Frontend | React 18 + TypeScript + Vite |
+| UI | Material UI v6 |
+| Backend | Firebase Functions (Node.js) |
+| Banco de dados | Cloud Firestore (tempo real) |
+| Autenticação | Firebase Auth (e-mail/senha) |
+| Deploy | Firebase Hosting + GitHub Actions |
+
+---
+
+## Funcionalidades
+
+- **Autenticação** — cadastro e login com e-mail e senha
+- **Conexões** — crie e gerencie múltiplos canais de broadcast
+- **Contatos** — adicione, edite e remova contatos por conexão
+- **Mensagens agendadas** — agende disparos com data/hora; datas passadas disparam imediatamente
+- **Tempo real** — todas as listas atualizam automaticamente via `onSnapshot` do Firestore
+- **Responsivo** — funciona em desktop, tablet e mobile
+- **Notificações** — feedback visual (toast) para todas as ações do usuário
+
+---
+
+## Arquitetura
 
 ```
-Projeto-SendFlow-Broadcast/
-├── web/              # Frontend React + TypeScript + Vite
-├── functions/        # Firebase Cloud Functions (TypeScript)
-├── firestore.rules   # Regras de segurança do Firestore
-├── firestore.indexes.json
-├── firebase.json
-└── .firebaserc
+Projeto-pr-tico-Broadcast/
+├── web/                        # Frontend (React + Vite)
+│   ├── src/
+│   │   ├── components/         # Componentes reutilizáveis
+│   │   │   ├── layout/         # AppShell, PrivateRoute
+│   │   │   └── ui/             # CardSkeleton
+│   │   ├── contexts/           # AuthContext, SnackbarContext
+│   │   ├── hooks/              # useConnections, useContacts, useMessages
+│   │   ├── pages/              # LoginPage, RegisterPage, ConnectionsPage, ...
+│   │   ├── services/           # connections.ts, contacts.ts, messages.ts
+│   │   ├── types/              # Tipagens TypeScript
+│   │   └── lib/                # firebase.ts, dateUtils.ts
+│   └── public/                 # Ativos estáticos (logo.png, favicon)
+├── functions/                  # Firebase Functions (Node.js)
+│   └── src/
+│       └── index.ts            # dispatchScheduledMessages (onSchedule)
+├── firestore.rules             # Regras de segurança do Firestore
+├── firebase.json               # Configuração Firebase
+└── REQUISITOS.md               # Checklist dos requisitos do projeto
 ```
 
-## Tecnologias
+### Modelo de dados (Firestore — coleções planas)
 
-- **Frontend:** React 19, TypeScript, Vite, Material UI v9, Tailwind CSS v4
-- **Backend:** Firebase Auth, Firestore (tempo real), Cloud Functions
-- **Paradigma:** Funcional (sem orientação a objeto)
+```
+connections/{connectionId}
+  uid, name, createdAt
 
-## Estrutura do Firestore
+contacts/{contactId}
+  uid, connectionId, name, phone, createdAt
 
-Sem subcoleções — todas as coleções ficam na raiz:
-
-| Coleção       | Campos principais                                                      |
-|---------------|------------------------------------------------------------------------|
-| `connections` | `id`, `userId`, `name`, `createdAt`                                   |
-| `contacts`    | `id`, `userId`, `connectionId`, `name`, `phone`, `createdAt`          |
-| `messages`    | `id`, `userId`, `connectionId`, `contactIds[]`, `content`, `status`, `scheduledAt`, `sentAt`, `createdAt` |
-
-## Como executar
-
-### 1. Configurar o Firebase
-
-Crie um projeto no [Firebase Console](https://console.firebase.google.com/) e ative:
-- Authentication (Email/Password)
-- Firestore Database
-- Cloud Functions (plano Blaze)
-
-### 2. Configurar variáveis de ambiente
-
-```bash
-cp web/.env.example web/.env
-# Preencha com as credenciais do seu projeto Firebase
+messages/{messageId}
+  uid, connectionId, contactIds[], content,
+  scheduledAt, status (scheduled | sent), sentAt
 ```
 
-### 3. Inicializar o Firebase CLI
+> Sem subcoleções — modelo flat para facilitar queries e regras de segurança.
 
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use --add  # Selecione seu projeto
-```
+---
 
-### 4. Rodar o frontend
+## Como rodar localmente
+
+### Pré-requisitos
+
+- Node.js 18+
+- Firebase CLI (`npm install -g firebase-tools`)
+- Conta Firebase com projeto criado
+
+### Frontend
 
 ```bash
 cd web
 npm install
-npm run dev
+cp .env.example .env   # preencha com suas credenciais Firebase
+npm run dev            # http://localhost:5173
 ```
 
-### 5. Deploy das Cloud Functions
+### Variáveis de ambiente (`web/.env`)
+
+```env
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_FIREBASE_MEASUREMENT_ID=
+```
+
+### Functions (opcional — requer plano Blaze)
 
 ```bash
 cd functions
 npm install
-npm run build
 firebase deploy --only functions
 ```
 
-### 6. Deploy das regras e índices do Firestore
-
-```bash
-firebase deploy --only firestore
-```
-
-### 7. Deploy completo (hosting + functions + firestore)
+### Deploy completo
 
 ```bash
 cd web && npm run build
 firebase deploy
 ```
 
-## Funcionalidades
-
-- **Login / Cadastro** com Firebase Auth
-- **Conexões:** CRUD de conexões (cada cliente tem as suas)
-- **Contatos:** CRUD de contatos vinculados a uma conexão (nome + telefone)
-- **Mensagens:**
-  - Criação com seleção de múltiplos contatos
-  - Agendamento de disparo por data/hora
-  - Filtro por status: Todas / Enviadas / Agendadas
-  - CRUD completo
-  - **Cloud Function** executa a cada minuto e muda mensagens agendadas para `sent` quando o horário chega
+---
 
 ## Segurança
 
-As Firestore Security Rules garantem isolamento total entre clientes:
-- Cada documento tem o campo `userId` do proprietário
-- Leitura e escrita só são permitidas para o usuário autenticado dono do documento
+As Firestore Security Rules garantem que cada usuário acesse **apenas seus próprios documentos**:
+
+```js
+match /connections/{id} {
+  allow read, write: if request.auth.uid == resource.data.uid;
+}
+```
+
+---
+
+## CI/CD
+
+O repositório conta com GitHub Actions configurados para:
+
+- **Pull Request** → build + deploy em canal de preview do Firebase Hosting
+- **Merge na `main`** → deploy automático em produção
+
+---
+
+## Decisões técnicas
+
+| Decisão | Justificativa |
+|---|---|
+| **Paradigma funcional** | Hooks e funções puras; sem classes ou OOP |
+| **Vite** em vez de CRA | Build mais rápido, HMR instantâneo, suporte nativo a ESM |
+| **Coleções planas** | Queries mais simples, regras de segurança mais claras |
+| **`onSnapshot`** | Atualização em tempo real sem polling |
+| **`functions/` separado de `web/`** | Separação de responsabilidades; deploys independentes |
