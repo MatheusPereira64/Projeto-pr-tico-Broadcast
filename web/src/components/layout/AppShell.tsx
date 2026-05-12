@@ -22,12 +22,14 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import WifiIcon from '@mui/icons-material/Wifi';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import SendIcon from '@mui/icons-material/Send';
 import { useAuth } from '../../contexts/AuthContext';
 
-const DRAWER_WIDTH = 240;
+const DRAWER_WIDTH = 256;
 
 const navItems = [
-  { label: 'Conexões', path: '/connections', icon: <WifiIcon /> },
+  { label: 'Conexões', path: '/connections', icon: <WifiIcon fontSize="small" /> },
 ];
 
 export const AppShell = () => {
@@ -48,27 +50,95 @@ export const AppShell = () => {
   };
 
   const drawer = (
-    <Box>
-      <Toolbar>
-        <Typography variant="h6" fontWeight={700} color="primary">
-          Broadcast
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Logo */}
+      <Box
+        sx={{
+          px: 3,
+          py: 2.5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+        }}
+      >
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: 2,
+            bgcolor: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <SendIcon sx={{ color: 'white', fontSize: 20 }} />
+        </Box>
+        <Typography variant="h6" sx={{ color: 'white', fontWeight: 800, letterSpacing: '-0.5px' }}>
+          SendFlow
         </Typography>
-      </Toolbar>
+      </Box>
+
       <Divider />
-      <List>
-        {navItems.map((item) => (
-          <ListItem key={item.path} disablePadding>
-            <ListItemButton
-              selected={location.pathname.startsWith(item.path)}
-              onClick={() => navigate(item.path)}
-              sx={{ borderRadius: 1, mx: 1 }}
-            >
-              <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+
+      {/* Nav */}
+      <Box sx={{ flex: 1, px: 1.5, pt: 2 }}>
+        <Typography variant="caption" sx={{ px: 1.5, color: 'text.disabled', fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>
+          Menu
+        </Typography>
+        <List sx={{ mt: 0.5 }}>
+          {navItems.map((item) => {
+            const active = location.pathname.startsWith(item.path);
+            return (
+              <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  selected={active}
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    borderRadius: 2,
+                    py: 1.1,
+                    px: 1.5,
+                    '&.Mui-selected': {
+                      background: 'linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(124,58,237,0.12) 100%)',
+                      color: 'primary.main',
+                      '& .MuiListItemIcon-root': { color: 'primary.main' },
+                    },
+                    '&.Mui-selected:hover': {
+                      background: 'linear-gradient(135deg, rgba(79,70,229,0.18) 0%, rgba(124,58,237,0.18) 100%)',
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 36, color: active ? 'primary.main' : 'text.secondary' }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    slotProps={{ primary: { sx: { fontWeight: active ? 700 : 500, fontSize: '0.9rem' } } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+      </Box>
+
+      {/* User info */}
+      <Divider />
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Avatar sx={{ width: 36, height: 36, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', fontSize: 14, fontWeight: 700 }}>
+          {user?.email?.[0]?.toUpperCase()}
+        </Avatar>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{user?.email?.split('@')[0]}</Typography>
+          <Typography variant="caption" color="text.secondary" noWrap>{user?.email}</Typography>
+        </Box>
+        <Tooltip title="Sair">
+          <IconButton size="small" onClick={handleLogout} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main', bgcolor: 'rgba(239,68,68,0.08)' } }}>
+            <ExitToAppIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
     </Box>
   );
 
@@ -79,30 +149,44 @@ export const AppShell = () => {
       <AppBar
         position="fixed"
         elevation={0}
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', color: 'text.primary' }}
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          borderBottom: '1px solid',
+          borderColor: 'grey.200',
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          display: { sm: 'none' },
+        }}
       >
         <Toolbar>
-          <IconButton edge="start" onClick={handleDrawerToggle} sx={{ mr: 2, display: { sm: 'none' } }}>
+          <IconButton edge="start" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" fontWeight={700} color="primary" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
-            Broadcast
-          </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'block', sm: 'none' } }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+            <Box sx={{ width: 28, height: 28, borderRadius: 1.5, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <SendIcon sx={{ color: 'white', fontSize: 16 }} />
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              SendFlow
+            </Typography>
+          </Box>
           <Tooltip title={user?.email ?? ''}>
             <IconButton onClick={handleMenuOpen} size="small">
-              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 14 }}>
+              <Avatar sx={{ width: 32, height: 32, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', fontSize: 13, fontWeight: 700 }}>
                 {user?.email?.[0]?.toUpperCase()}
               </Avatar>
             </IconButton>
           </Tooltip>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-            <MenuItem disabled>
-              <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} slotProps={{ paper: { sx: { borderRadius: 3, mt: 1, minWidth: 180 } } }}>
+            <MenuItem disabled sx={{ opacity: '1 !important' }}>
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email?.split('@')[0]}</Typography>
+                <Typography variant="caption" color="text.secondary">{user?.email}</Typography>
+              </Box>
             </MenuItem>
             <Divider />
-            <MenuItem onClick={handleLogout}>
-              <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+            <MenuItem onClick={handleLogout} sx={{ color: 'error.main', gap: 1 }}>
+              <LogoutIcon fontSize="small" />
               Sair
             </MenuItem>
           </Menu>
@@ -115,25 +199,37 @@ export const AppShell = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{ keepMounted: true }}
-          sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: DRAWER_WIDTH } }}
+          sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: DRAWER_WIDTH, border: 'none' } }}
         >
           {drawer}
         </Drawer>
         <Drawer
           variant="permanent"
-          sx={{ display: { xs: 'none', sm: 'block' }, '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', borderRight: '1px solid', borderColor: 'divider' } }}
+          sx={{ display: { xs: 'none', sm: 'block' }, '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', border: 'none', borderRight: '1px solid #E2E8F0' } }}
           open
         >
           {drawer}
         </Drawer>
       </Box>
 
-      <Box component="main" sx={{ flexGrow: 1, width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` } }}>
-        <Toolbar />
-        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+      <Box component="main" sx={{ flexGrow: 1, width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` }, minHeight: '100vh' }}>
+        <Box sx={{ display: { xs: 'block', sm: 'none' } }}><Toolbar /></Box>
+        <Box sx={{ p: { xs: 2, sm: 4 }, maxWidth: 1200, mx: 'auto' }}>
           <Outlet />
         </Box>
       </Box>
+
+      {/* Menu mobile user (fora do Drawer) */}
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl) && mobileOpen === false} onClose={handleMenuClose}>
+        <MenuItem disabled>
+          <Typography variant="body2">{user?.email}</Typography>
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleLogout}>
+          <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+          Sair
+        </MenuItem>
+      </Menu>
     </Box>
   );
 };

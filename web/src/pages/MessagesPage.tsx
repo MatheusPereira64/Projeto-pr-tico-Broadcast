@@ -24,10 +24,9 @@ import {
   Tab,
   Tabs,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Tooltip,
   Typography,
+  Avatar,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -37,6 +36,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SendIcon from '@mui/icons-material/Send';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import PersonIcon from '@mui/icons-material/Person';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
 import { useContacts } from '../hooks/useContacts';
@@ -58,7 +59,6 @@ export const MessagesPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Message | null>(null);
   const [target, setTarget] = useState<Message | null>(null);
-
   const [content, setContent] = useState('');
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [scheduledAt, setScheduledAt] = useState('');
@@ -66,60 +66,34 @@ export const MessagesPage = () => {
   const [formError, setFormError] = useState('');
 
   const filtered = messages.filter((m) => filter === 'all' || m.status === filter);
+  const sentCount = messages.filter((m) => m.status === 'sent').length;
+  const scheduledCount = messages.filter((m) => m.status === 'scheduled').length;
 
   const getContactName = (id: string) => contacts.find((c) => c.id === id)?.name ?? id;
 
   const openCreate = () => {
-    setEditing(null);
-    setContent('');
-    setSelectedContacts([]);
-    setScheduledAt('');
-    setFormError('');
-    setDialogOpen(true);
+    setEditing(null); setContent(''); setSelectedContacts([]); setScheduledAt(''); setFormError(''); setDialogOpen(true);
   };
 
   const openEdit = (msg: Message) => {
-    setEditing(msg);
-    setContent(msg.content);
-    setSelectedContacts(msg.contactIds);
+    setEditing(msg); setContent(msg.content); setSelectedContacts(msg.contactIds);
     const dt = new Date(msg.scheduledAt);
-    setScheduledAt(toDatetimeLocalValue(dt));
-    setFormError('');
-    setDialogOpen(true);
-  };
-
-  const openDelete = (msg: Message) => {
-    setTarget(msg);
-    setDeleteDialogOpen(true);
-  };
-
-  const toDatetimeLocalValue = (date: Date) => {
     const pad = (n: number) => String(n).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    setScheduledAt(`${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`);
+    setFormError(''); setDialogOpen(true);
   };
+
+  const openDelete = (msg: Message) => { setTarget(msg); setDeleteDialogOpen(true); };
 
   const handleSave = async () => {
-    if (!content.trim()) {
-      setFormError('A mensagem é obrigatória.');
-      return;
-    }
-    if (selectedContacts.length === 0) {
-      setFormError('Selecione ao menos um contato.');
-      return;
-    }
-    if (!scheduledAt) {
-      setFormError('A data/hora de disparo é obrigatória.');
-      return;
-    }
-
+    if (!content.trim()) { setFormError('A mensagem é obrigatória.'); return; }
+    if (selectedContacts.length === 0) { setFormError('Selecione ao menos um contato.'); return; }
+    if (!scheduledAt) { setFormError('A data/hora de disparo é obrigatória.'); return; }
     const ts = new Date(scheduledAt).getTime();
     setSaving(true);
     try {
-      if (editing) {
-        await updateMessage(editing.id, selectedContacts, content.trim(), ts);
-      } else {
-        await createMessage(user!.uid, connectionId!, selectedContacts, content.trim(), ts);
-      }
+      if (editing) await updateMessage(editing.id, selectedContacts, content.trim(), ts);
+      else await createMessage(user!.uid, connectionId!, selectedContacts, content.trim(), ts);
       setDialogOpen(false);
     } catch {
       setFormError('Erro ao salvar. Tente novamente.');
@@ -130,100 +104,104 @@ export const MessagesPage = () => {
 
   const handleDelete = async () => {
     if (!target) return;
-    try {
-      await deleteMessage(target.id);
-    } finally {
-      setDeleteDialogOpen(false);
-      setTarget(null);
-    }
+    try { await deleteMessage(target.id); }
+    finally { setDeleteDialogOpen(false); setTarget(null); }
   };
 
   return (
     <Box>
-      <Box className="flex items-center gap-3 mb-2">
-        <IconButton onClick={() => navigate('/connections')} size="small">
-          <ArrowBackIcon />
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+        <IconButton onClick={() => navigate('/connections')} size="small" sx={{ bgcolor: 'grey.100', '&:hover': { bgcolor: 'grey.200' } }}>
+          <ArrowBackIcon fontSize="small" />
         </IconButton>
-        <Box className="flex-1">
-          <Typography variant="h5" fontWeight={700}>
-            Mensagens
-          </Typography>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-0.5px' }}>Mensagens</Typography>
           <Typography variant="body2" color="text.secondary">
-            Gerencie e agende mensagens para esta conexão
+            {messages.length > 0 ? `${messages.length} mensagem${messages.length !== 1 ? 's' : ''}` : 'Gerencie e agende mensagens'}
           </Typography>
         </Box>
-      </Box>
-
-      <Tabs value="messages" sx={{ mb: 3 }}>
-        <Tab
-          label="Contatos"
-          value="contacts"
-          onClick={() => navigate(`/connections/${connectionId}/contacts`)}
-          icon={<PersonIcon fontSize="small" />}
-          iconPosition="start"
-        />
-        <Tab label="Mensagens" value="messages" icon={<MessageIcon fontSize="small" />} iconPosition="start" />
-      </Tabs>
-
-      <Box className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-        <ToggleButtonGroup
-          value={filter}
-          exclusive
-          onChange={(_, v) => v && setFilter(v)}
-          size="small"
-        >
-          <ToggleButton value="all">Todas</ToggleButton>
-          <ToggleButton value="sent">
-            <SendIcon fontSize="small" sx={{ mr: 0.5 }} />
-            Enviadas
-          </ToggleButton>
-          <ToggleButton value="scheduled">
-            <ScheduleIcon fontSize="small" sx={{ mr: 0.5 }} />
-            Agendadas
-          </ToggleButton>
-        </ToggleButtonGroup>
-
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5 }}>
           Nova mensagem
         </Button>
       </Box>
 
-      {loading ? (
-        <Box className="flex justify-center py-16">
-          <CircularProgress />
+      {/* Tabs */}
+      <Tabs value="messages" sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'grey.200' }}>
+        <Tab label="Contatos" value="contacts" icon={<PersonIcon fontSize="small" />} iconPosition="start" onClick={() => navigate(`/connections/${connectionId}/contacts`)} />
+        <Tab label="Mensagens" value="messages" icon={<MessageIcon fontSize="small" />} iconPosition="start" />
+      </Tabs>
+
+      {/* Stats */}
+      {messages.length > 0 && (
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mb: 3 }}>
+          {[
+            { label: 'Total', value: messages.length, icon: <MessageIcon />, color: '#4F46E5', bg: 'rgba(79,70,229,0.08)' },
+            { label: 'Enviadas', value: sentCount, icon: <CheckCircleIcon />, color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
+            { label: 'Agendadas', value: scheduledCount, icon: <AccessTimeIcon />, color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
+          ].map((stat) => (
+            <Card key={stat.label} elevation={0} sx={{ textAlign: 'center', py: 2, px: 1 }}>
+              <Box sx={{ width: 40, height: 40, borderRadius: 2.5, bgcolor: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1, color: stat.color }}>
+                {stat.icon}
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: stat.color }}>{stat.value}</Typography>
+              <Typography variant="caption" color="text.secondary">{stat.label}</Typography>
+            </Card>
+          ))}
         </Box>
+      )}
+
+      {/* Filtros */}
+      <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+        {(['all', 'sent', 'scheduled'] as const).map((f) => (
+          <Chip
+            key={f}
+            label={f === 'all' ? 'Todas' : f === 'sent' ? 'Enviadas' : 'Agendadas'}
+            icon={f === 'sent' ? <SendIcon /> : f === 'scheduled' ? <ScheduleIcon /> : undefined}
+            onClick={() => setFilter(f)}
+            variant={filter === f ? 'filled' : 'outlined'}
+            color={filter === f ? (f === 'sent' ? 'success' : f === 'scheduled' ? 'warning' : 'primary') : 'default'}
+            sx={{ fontWeight: 600, cursor: 'pointer' }}
+          />
+        ))}
+      </Box>
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}><CircularProgress /></Box>
       ) : filtered.length === 0 ? (
-        <Box className="flex flex-col items-center justify-center py-24 text-center">
-          <MessageIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            Nenhuma mensagem encontrada
-          </Typography>
-          <Typography variant="body2" color="text.disabled" className="mb-4">
-            {filter === 'all'
-              ? 'Crie sua primeira mensagem'
-              : filter === 'sent'
-              ? 'Nenhuma mensagem enviada ainda'
-              : 'Nenhuma mensagem agendada'}
+        <Card elevation={0} sx={{ border: '2px dashed', borderColor: 'grey.200', borderRadius: 4, textAlign: 'center', py: 10, px: 4, bgcolor: 'transparent' }}>
+          <Box sx={{ width: 72, height: 72, borderRadius: 4, background: 'linear-gradient(135deg, rgba(79,70,229,0.1), rgba(124,58,237,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+            <MessageIcon sx={{ fontSize: 36, color: 'primary.main' }} />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700 }} gutterBottom>Nenhuma mensagem</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 280, mx: 'auto' }}>
+            {filter === 'all' ? 'Crie sua primeira mensagem para começar' : filter === 'sent' ? 'Nenhuma mensagem enviada ainda' : 'Nenhuma mensagem agendada'}
           </Typography>
           {filter === 'all' && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5 }}>
               Nova mensagem
             </Button>
           )}
-        </Box>
+        </Card>
       ) : (
-        <Box className="flex flex-col gap-3">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {filtered.map((msg) => (
-            <Card key={msg.id} variant="outlined">
-              <CardContent>
-                <Box className="flex items-start justify-between gap-2">
-                  <Box className="flex-1 min-w-0">
-                    <Box className="flex items-center gap-2 mb-2 flex-wrap">
+            <Card key={msg.id} elevation={0} sx={{ '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)' } }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    {/* Status + data */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, flexWrap: 'wrap' }}>
                       <Chip
                         size="small"
+                        icon={msg.status === 'sent' ? <CheckCircleIcon /> : <AccessTimeIcon />}
                         label={msg.status === 'sent' ? 'Enviada' : 'Agendada'}
-                        color={msg.status === 'sent' ? 'success' : 'warning'}
-                        icon={msg.status === 'sent' ? <SendIcon /> : <ScheduleIcon />}
+                        sx={{
+                          fontWeight: 700,
+                          bgcolor: msg.status === 'sent' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+                          color: msg.status === 'sent' ? 'success.main' : 'warning.dark',
+                          '& .MuiChip-icon': { color: 'inherit' },
+                        }}
                       />
                       <Typography variant="caption" color="text.secondary">
                         {msg.status === 'sent'
@@ -231,29 +209,30 @@ export const MessagesPage = () => {
                           : `Agendada para ${format(msg.scheduledAt)}`}
                       </Typography>
                     </Box>
-                    <Typography variant="body1" className="mb-2 break-words">
+
+                    {/* Conteúdo */}
+                    <Typography variant="body1" sx={{ mb: 1.5, lineHeight: 1.6, color: 'text.primary' }}>
                       {msg.content}
                     </Typography>
-                    <Box className="flex flex-wrap gap-1">
+
+                    {/* Contatos */}
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                       {msg.contactIds.map((id) => (
-                        <Chip
-                          key={id}
-                          size="small"
-                          label={getContactName(id)}
-                          icon={<PersonIcon />}
-                          variant="outlined"
-                        />
+                        <Box key={id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'grey.100', borderRadius: 5, px: 1.5, py: 0.4 }}>
+                          <Avatar sx={{ width: 18, height: 18, fontSize: 9, bgcolor: 'primary.main' }}>
+                            {getContactName(id)[0]?.toUpperCase()}
+                          </Avatar>
+                          <Typography variant="caption" sx={{ fontWeight: 600 }}>{getContactName(id)}</Typography>
+                        </Box>
                       ))}
                     </Box>
                   </Box>
-                  <Box className="flex flex-shrink-0">
-                    <Tooltip title="Editar">
+
+                  {/* Ações */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flexShrink: 0 }}>
+                    <Tooltip title={msg.status === 'sent' ? 'Mensagem já enviada' : 'Editar'}>
                       <span>
-                        <IconButton
-                          size="small"
-                          onClick={() => openEdit(msg)}
-                          disabled={msg.status === 'sent'}
-                        >
+                        <IconButton size="small" onClick={() => openEdit(msg)} disabled={msg.status === 'sent'}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </span>
@@ -271,25 +250,30 @@ export const MessagesPage = () => {
         </Box>
       )}
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{editing ? 'Editar mensagem' : 'Nova mensagem'}</DialogTitle>
-        <DialogContent className="flex flex-col gap-4 pt-2">
-          {formError && <Alert severity="error">{formError}</Alert>}
+      {/* Dialog criar/editar */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm" disableRestoreFocus>
+        <DialogTitle sx={{ fontWeight: 700 }}>{editing ? 'Editar mensagem' : 'Nova mensagem'}</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: '8px !important' }}>
+          {formError && <Alert severity="error" sx={{ borderRadius: 2 }}>{formError}</Alert>}
 
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Contatos</InputLabel>
+          <FormControl fullWidth>
+            <InputLabel>Contatos destinatários</InputLabel>
             <Select
               multiple
               value={selectedContacts}
               onChange={(e) => setSelectedContacts(e.target.value as string[])}
-              input={<OutlinedInput label="Contatos" />}
-              renderValue={(selected) =>
-                selected.map((id) => getContactName(id)).join(', ')
-              }
+              input={<OutlinedInput label="Contatos destinatários" />}
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((id) => (
+                    <Chip key={id} label={getContactName(id)} size="small" sx={{ borderRadius: 1.5 }} />
+                  ))}
+                </Box>
+              )}
             >
               {contacts.map((c) => (
                 <MenuItem key={c.id} value={c.id}>
-                  <Checkbox checked={selectedContacts.includes(c.id)} />
+                  <Checkbox checked={selectedContacts.includes(c.id)} size="small" />
                   <ListItemText primary={c.name} secondary={c.phone} />
                 </MenuItem>
               ))}
@@ -306,7 +290,6 @@ export const MessagesPage = () => {
             fullWidth
             multiline
             minRows={3}
-            margin="dense"
             placeholder="Digite a mensagem que será enviada..."
           />
 
@@ -316,29 +299,29 @@ export const MessagesPage = () => {
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
             fullWidth
-            margin="dense"
-            InputLabelProps={{ shrink: true }}
-            helperText="Se a data/hora for no passado ou agora, a mensagem será marcada como enviada imediatamente."
+            slotProps={{ inputLabel: { shrink: true } }}
+            helperText="Datas no passado disparam imediatamente ao salvar."
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleSave} disabled={saving}>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button onClick={() => setDialogOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>Cancelar</Button>
+          <Button variant="contained" onClick={handleSave} disabled={saving} startIcon={<SendIcon />} sx={{ borderRadius: 2 }}>
             {saving ? 'Salvando...' : editing ? 'Atualizar' : 'Criar'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Excluir mensagem</DialogTitle>
+      {/* Dialog excluir */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="xs" fullWidth disableRestoreFocus>
+        <DialogTitle sx={{ fontWeight: 700 }}>Excluir mensagem</DialogTitle>
         <DialogContent>
-          <Typography>Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.
+          </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" color="error" onClick={handleDelete}>
-            Excluir
-          </Button>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>Cancelar</Button>
+          <Button variant="contained" color="error" onClick={handleDelete} sx={{ borderRadius: 2 }}>Excluir</Button>
         </DialogActions>
       </Dialog>
     </Box>

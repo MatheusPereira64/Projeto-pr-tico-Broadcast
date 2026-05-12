@@ -3,18 +3,17 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   TextField,
   Typography,
   Alert,
   Link,
   InputAdornment,
   IconButton,
+  Paper,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import WifiIcon from '@mui/icons-material/Wifi';
+import SendIcon from '@mui/icons-material/Send';
 import { useAuth } from '../contexts/AuthContext';
 
 export const RegisterPage = () => {
@@ -30,16 +29,8 @@ export const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (password !== confirm) {
-      setError('As senhas não coincidem.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres.');
-      return;
-    }
-
+    if (password !== confirm) { setError('As senhas não coincidem.'); return; }
+    if (password.length < 6) { setError('A senha deve ter no mínimo 6 caracteres.'); return; }
     setLoading(true);
     try {
       await signUp(email, password);
@@ -52,37 +43,62 @@ export const RegisterPage = () => {
   };
 
   return (
-    <Box className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Card className="w-full max-w-md mx-4" elevation={3}>
-        <CardContent className="p-8">
-          <Box className="flex flex-col items-center mb-8">
-            <Box className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-600 mb-4">
-              <WifiIcon sx={{ color: 'white', fontSize: 28 }} />
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Painel esquerdo — gradiente */}
+      <Box
+        sx={{
+          display: { xs: 'none', md: 'flex' },
+          flex: 1,
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+          p: 6,
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <Box sx={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', top: -100, right: -100 }} />
+        <Box sx={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', bottom: -80, left: -80 }} />
+        <Box sx={{ position: 'relative', textAlign: 'center' }}>
+          <Box sx={{ width: 72, height: 72, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, backdropFilter: 'blur(10px)' }}>
+            <SendIcon sx={{ fontSize: 36, color: 'white' }} />
+          </Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>SendFlow</Typography>
+          <Typography variant="body1" sx={{ opacity: 0.8, maxWidth: 300 }}>
+            Crie sua conta gratuitamente e comece a gerenciar suas conexões agora mesmo.
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Painel direito — formulário */}
+      <Box
+        sx={{
+          flex: { xs: 1, md: '0 0 480px' },
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          bgcolor: 'background.default',
+          p: { xs: 3, sm: 6 },
+        }}
+      >
+        <Paper elevation={0} sx={{ width: '100%', maxWidth: 400, p: { xs: 3, sm: 4 }, borderRadius: 4, border: '1px solid', borderColor: 'grey.200' }}>
+          <Box sx={{ display: { md: 'none' }, textAlign: 'center', mb: 3 }}>
+            <Box sx={{ width: 52, height: 52, borderRadius: 3, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', mb: 1.5 }}>
+              <SendIcon sx={{ color: 'white', fontSize: 26 }} />
             </Box>
-            <Typography variant="h5" fontWeight={700} gutterBottom>
-              Criar conta
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Registre-se no Broadcast
-            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }} color="primary">SendFlow</Typography>
           </Box>
 
-          {error && (
-            <Alert severity="error" className="mb-4">
-              {error}
-            </Alert>
-          )}
+          <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>Criar conta</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>Registre-se gratuitamente no SendFlow</Typography>
 
-          <Box component="form" onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <TextField
-              label="E-mail"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              fullWidth
-              autoComplete="email"
-            />
+          {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>}
+
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField label="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required fullWidth autoComplete="email" />
             <TextField
               label="Senha"
               type={showPassword ? 'text' : 'password'}
@@ -91,44 +107,30 @@ export const RegisterPage = () => {
               required
               fullWidth
               autoComplete="new-password"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword((v) => !v)} edge="end">
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword((v) => !v)} edge="end" size="small">
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
-            <TextField
-              label="Confirmar senha"
-              type={showPassword ? 'text' : 'password'}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-              fullWidth
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              fullWidth
-              disabled={loading}
-              className="mt-2"
-            >
+            <TextField label="Confirmar senha" type={showPassword ? 'text' : 'password'} value={confirm} onChange={(e) => setConfirm(e.target.value)} required fullWidth />
+            <Button type="submit" variant="contained" size="large" fullWidth disabled={loading} sx={{ mt: 1, py: 1.4, fontSize: '1rem' }}>
               {loading ? 'Criando conta...' : 'Criar conta'}
             </Button>
           </Box>
 
-          <Typography variant="body2" align="center" className="mt-6">
+          <Typography variant="body2" align="center" sx={{ mt: 3, color: 'text.secondary' }}>
             Já tem uma conta?{' '}
-            <Link component={RouterLink} to="/login" fontWeight={600}>
-              Entrar
-            </Link>
+            <Link component={RouterLink} to="/login" sx={{ fontWeight: 700, color: 'primary.main' }}>Entrar</Link>
           </Typography>
-        </CardContent>
-      </Card>
+        </Paper>
+      </Box>
     </Box>
   );
 };

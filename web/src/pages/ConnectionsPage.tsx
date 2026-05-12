@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Card,
-  CardActionArea,
   CardContent,
   CircularProgress,
   Dialog,
@@ -16,19 +15,16 @@ import {
   Tooltip,
   Typography,
   Alert,
+  Chip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WifiIcon from '@mui/icons-material/Wifi';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useAuth } from '../contexts/AuthContext';
 import { useConnections } from '../hooks/useConnections';
-import {
-  createConnection,
-  updateConnection,
-  deleteConnection,
-} from '../services/connections';
+import { createConnection, updateConnection, deleteConnection } from '../services/connections';
 import type { Connection } from '../types';
 
 export const ConnectionsPage = () => {
@@ -44,39 +40,24 @@ export const ConnectionsPage = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const openCreate = () => {
-    setEditing(null);
-    setName('');
-    setError('');
-    setDialogOpen(true);
-  };
+  const openCreate = () => { setEditing(null); setName(''); setError(''); setDialogOpen(true); };
 
   const openEdit = (conn: Connection, e: React.MouseEvent) => {
     e.stopPropagation();
-    setEditing(conn);
-    setName(conn.name);
-    setError('');
-    setDialogOpen(true);
+    setEditing(conn); setName(conn.name); setError(''); setDialogOpen(true);
   };
 
   const openDelete = (conn: Connection, e: React.MouseEvent) => {
     e.stopPropagation();
-    setTarget(conn);
-    setDeleteDialogOpen(true);
+    setTarget(conn); setDeleteDialogOpen(true);
   };
 
   const handleSave = async () => {
-    if (!name.trim()) {
-      setError('O nome é obrigatório.');
-      return;
-    }
+    if (!name.trim()) { setError('O nome é obrigatório.'); return; }
     setSaving(true);
     try {
-      if (editing) {
-        await updateConnection(editing.id, name.trim());
-      } else {
-        await createConnection(user!.uid, name.trim());
-      }
+      if (editing) await updateConnection(editing.id, name.trim());
+      else await createConnection(user!.uid, name.trim());
       setDialogOpen(false);
     } catch {
       setError('Erro ao salvar. Tente novamente.');
@@ -87,117 +68,175 @@ export const ConnectionsPage = () => {
 
   const handleDelete = async () => {
     if (!target) return;
-    try {
-      await deleteConnection(target.id);
-    } finally {
-      setDeleteDialogOpen(false);
-      setTarget(null);
-    }
+    try { await deleteConnection(target.id); }
+    finally { setDeleteDialogOpen(false); setTarget(null); }
   };
 
   return (
     <Box>
-      <Box className="flex items-center justify-between mb-6">
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 4, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-0.5px' }}>
             Conexões
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Gerencie suas conexões de broadcast
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {connections.length > 0
+              ? `${connections.length} conexão${connections.length !== 1 ? 'ões' : ''} ativa${connections.length !== 1 ? 's' : ''}`
+              : 'Gerencie suas conexões de broadcast'}
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={openCreate}
+          sx={{ borderRadius: 2.5, px: 2.5 }}
+        >
           Nova conexão
         </Button>
       </Box>
 
       {loading ? (
-        <Box className="flex justify-center py-16">
-          <CircularProgress />
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
+          <CircularProgress sx={{ color: 'primary.main' }} />
         </Box>
       ) : connections.length === 0 ? (
-        <Box className="flex flex-col items-center justify-center py-24 text-center">
-          <WifiIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            Nenhuma conexão encontrada
+        <Card
+          elevation={0}
+          sx={{
+            border: '2px dashed',
+            borderColor: 'grey.200',
+            borderRadius: 4,
+            textAlign: 'center',
+            py: 10,
+            px: 4,
+            bgcolor: 'transparent',
+          }}
+        >
+          <Box
+            sx={{
+              width: 72,
+              height: 72,
+              borderRadius: 4,
+              background: 'linear-gradient(135deg, rgba(79,70,229,0.1), rgba(124,58,237,0.1))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 2,
+            }}
+          >
+            <WifiIcon sx={{ fontSize: 36, color: 'primary.main' }} />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700 }} gutterBottom>Nenhuma conexão ainda</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 300, mx: 'auto' }}>
+            Crie sua primeira conexão para começar a gerenciar contatos e mensagens
           </Typography>
-          <Typography variant="body2" color="text.disabled" className="mb-4">
-            Crie sua primeira conexão para começar
-          </Typography>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-            Nova conexão
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2.5 }}>
+            Criar primeira conexão
           </Button>
-        </Box>
+        </Card>
       ) : (
-        <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2.5 }}>
           {connections.map((conn) => (
-            <Card key={conn.id} variant="outlined" className="hover:shadow-md transition-shadow">
-              <CardActionArea onClick={() => navigate(`/connections/${conn.id}/contacts`)}>
-                <CardContent>
-                  <Box className="flex items-center justify-between">
-                    <Box className="flex items-center gap-3">
-                      <Box className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50">
-                        <WifiIcon color="primary" />
-                      </Box>
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        {conn.name}
-                      </Typography>
-                    </Box>
-                    <Box className="flex items-center">
-                      <Tooltip title="Editar">
-                        <IconButton size="small" onClick={(e) => openEdit(conn, e)}>
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Excluir">
-                        <IconButton size="small" onClick={(e) => openDelete(conn, e)}>
-                          <DeleteIcon fontSize="small" color="error" />
-                        </IconButton>
-                      </Tooltip>
-                      <ChevronRightIcon color="action" />
-                    </Box>
+            <Card
+              key={conn.id}
+              elevation={0}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': { boxShadow: '0 8px 24px rgba(79,70,229,0.12)', transform: 'translateY(-2px)', borderColor: 'primary.light' },
+              }}
+              onClick={() => navigate(`/connections/${conn.id}/contacts`)}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 3,
+                      background: 'linear-gradient(135deg, rgba(79,70,229,0.12), rgba(124,58,237,0.12))',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <WifiIcon sx={{ color: 'primary.main', fontSize: 24 }} />
                   </Box>
-                </CardContent>
-              </CardActionArea>
+                  <Box sx={{ display: 'flex', gap: 0.5 }} onClick={(e) => e.stopPropagation()}>
+                    <Tooltip title="Editar">
+                      <IconButton size="small" onClick={(e) => openEdit(conn, e)} sx={{ '&:hover': { bgcolor: 'primary.50', color: 'primary.main' } }}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Excluir">
+                      <IconButton size="small" onClick={(e) => openDelete(conn, e)} sx={{ '&:hover': { bgcolor: 'error.50', color: 'error.main' } }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }} gutterBottom>
+                  {conn.name}
+                </Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+                  <Chip
+                    label="Ativa"
+                    size="small"
+                    sx={{ bgcolor: 'rgba(16,185,129,0.1)', color: 'success.main', fontWeight: 600, fontSize: '0.7rem' }}
+                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'primary.main' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600 }}>Ver detalhes</Typography>
+                    <ArrowForwardIcon sx={{ fontSize: 14 }} />
+                  </Box>
+                </Box>
+              </CardContent>
             </Card>
           ))}
         </Box>
       )}
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="xs">
-        <DialogTitle>{editing ? 'Editar conexão' : 'Nova conexão'}</DialogTitle>
+      {/* Dialog criar/editar */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="xs" disableRestoreFocus>
+        <DialogTitle sx={{ pb: 1, fontWeight: 700 }}>
+          {editing ? 'Editar conexão' : 'Nova conexão'}
+        </DialogTitle>
         <DialogContent>
-          {error && <Alert severity="error" className="mb-3">{error}</Alert>}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {editing ? 'Altere o nome da conexão.' : 'Dê um nome para identificar esta conexão.'}
+          </Typography>
+          {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>}
           <TextField
             autoFocus
             label="Nome da conexão"
             value={name}
             onChange={(e) => setName(e.target.value)}
             fullWidth
-            margin="dense"
             onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+            placeholder="Ex: WhatsApp Empresa"
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleSave} disabled={saving}>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button onClick={() => setDialogOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>Cancelar</Button>
+          <Button variant="contained" onClick={handleSave} disabled={saving} sx={{ borderRadius: 2 }}>
             {saving ? 'Salvando...' : 'Salvar'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Excluir conexão</DialogTitle>
+      {/* Dialog excluir */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="xs" fullWidth disableRestoreFocus>
+        <DialogTitle sx={{ fontWeight: 700 }}>Excluir conexão</DialogTitle>
         <DialogContent>
-          <Typography>
-            Tem certeza que deseja excluir a conexão <strong>{target?.name}</strong>? Esta ação não pode ser desfeita.
+          <Typography variant="body2" color="text.secondary">
+            Tem certeza que deseja excluir <strong>{target?.name}</strong>? Todos os contatos e mensagens vinculados serão perdidos. Esta ação não pode ser desfeita.
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" color="error" onClick={handleDelete}>
-            Excluir
-          </Button>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>Cancelar</Button>
+          <Button variant="contained" color="error" onClick={handleDelete} sx={{ borderRadius: 2 }}>Excluir</Button>
         </DialogActions>
       </Dialog>
     </Box>

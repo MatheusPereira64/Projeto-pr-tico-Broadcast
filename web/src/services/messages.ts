@@ -10,7 +10,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { Message, MessageStatus } from '../types';
+import type { Message } from '../types';
 
 const COLLECTION = 'messages';
 
